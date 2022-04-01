@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<script src="js/ajax_utils.js"></script>
+		<script src="js/mui.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function() {
+				var user = util.getUser()
+				util.ajax({
+					url: url.get_applies_url,
+					data: {
+						"uid": user.id,
+					},
+					success: function(resp) {
+						// console.info(JSON.stringify(resp));
+						if (resp.code == "ok") {
+							var list = resp.data
+							var html = "";
+							// console.info(JSON.stringify(list))
+							for (var i = 0; i < list.length; i++) {
+								var item = list[i]
+								
+								html += '<li class="mui-table-view-cell mui-media">';
+								html += '<a href="javascript:;">';
+								if(item.friend.headerSmall != null){
+									html += '<img class="mui-media-object mui-pull-left" src="'+item.friend.headerSmall+'">';
+								}else{
+									html += '<img class="mui-media-object mui-pull-left" src="img/defaultheader.png">';
+								}
+								html += '<div class="mui-media-body">';
+								html += item.friend.username;
+								html += '</div>';
+								html += '<div class="mui-media-body">';
+								html += item.content;
+								html += '</div>';
+								if(item.status == 1){
+									html += '<button type="button" id="'+ item.id +'" num="2" class="mui-btn mui-btn-success"';
+									html += 'style="margin-right: 70px;">接受</button>';
+									html += '<button type="button" id="'+ item.id +'" num="3" class="mui-btn mui-btn-danger">拒绝</button>';
+								}else if(item.status == 2){
+									html += '<button type="button" class="mui-btn mui-btn-grey">已接受</button>';
+								}else if(item.status == 3){
+									html += '<button type="button" class="mui-btn mui-btn-grey">已拒绝</button>';
+								}
+								
+								html += '</a>';
+								html += '</li>';
+							}
+							document.getElementById("showList").innerHTML = html;
+						} 	
+					}
+				});
+				
+				mui.plusReady(function () {
+				    mui(".mui-table-view").on('tap','.mui-btn-success, .mui-btn-danger',function(){
+				      var status = this.getAttribute("num")
+					  var applyId = this.getAttribute("id")
+					  util.ajax({
+						  url: url.process_applies_url,
+						  data:{
+							  "status": status,
+							  "id": applyId
+						  },
+						  success: function(resp){
+							  location.reload()
+							  console.info(JSON.stringify(resp))
+						  }
+					  })
+				    });
+				})
+				
+			})
+		</script>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">好友申请</h1>
+		</header>
+		<ul class="mui-table-view" id="showList" style="margin-top: 50px;"></ul>
+	</body>
+
+</html>

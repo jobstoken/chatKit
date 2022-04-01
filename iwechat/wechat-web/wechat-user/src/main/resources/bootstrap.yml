@@ -1,0 +1,19 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8081
+      name: application
+      profile: user,euclient,redis,rebbitmq
+
+fdfs:
+  so-timeout: 2000
+  connect-timeout: 2000
+  thumb-image:
+    width: 100
+    height: 100
+  tracker-list:
+    - 101.132.227.155:22122
+fastpath: http://101.132.227.155
+
+
+

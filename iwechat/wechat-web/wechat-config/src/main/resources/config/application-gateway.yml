@@ -1,0 +1,16 @@
+server:
+  port: 8888
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-web
+          uri: lb://USER-WEB
+          predicates:
+            - Path=/user/**
+        - id: friend-web
+          uri: lb://FRIEND-WEB
+          predicates:
+            - Path=/apply/**,/api/**
+  application:
+    name: wechat-gateway

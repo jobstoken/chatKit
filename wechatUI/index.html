@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title></title>
+		<script src="js/mui.min.js"></script>
+		<script src="js/websocket.js"></script>
+		<script src="js/ajax_utils.js"></script>
+		<link href="css/mui.min.css" rel="stylesheet" />
+		<script type="text/javascript" charset="utf-8">
+			mui.init();
+		
+			mui.plusReady(function() {
+				
+				plus.device.getInfo({
+					success: function(e) {
+						// 连接WebSocket服务器
+						console.info(JSON.stringify(e))
+						ws.init({
+							onopen: function() {
+								console.info("客户端连接成功")
+								var user = util.getUser()
+								var param = {
+									"type": 1,
+									"id": e.uuid.split(",")[0],
+									"uid": user.id
+								}
+								console.info(JSON.stringify(param))
+								sendObj(param)
+							},
+							onclose: function() {
+								console.info("客户端断开连接")
+							},
+							onmessage: function(data) {
+								var obj = JSON.parse(data);
+								if(obj.type == 6) {	// 挤下线
+									// 把本机用户删除
+									plus.storage.removeItem("login_user");
+									var cpage = plus.webview.currentWebview()
+									plus.webview.open("login.html", "login.html")
+									cpage.close()
+									plus.nativeUI.toast("您的账户已在其他设备上登陆，如非本人操作，请修改密码")
+								}else if(obj.type == 3){
+									var fid = plus.webview.getWebviewById("chat_msg_"+obj.fid)
+									// 显示对方聊天信息
+									fid.evalJS("showMsg("+JSON.stringify(obj)+")")
+									// 存放对方聊天信息
+									fid.evalJS("saveMsg("+JSON.stringify(obj)+")")
+								}
+								console.info("数据: " + data)
+							}
+						})
+					},
+					fail:function(){
+						
+					}
+				})
+				
+				var pages = ["msg.html", "friend.html", "discovery.html", "me.html"];
+
+				var style = {
+					top: '0px',
+					bottom: '50px'
+				};
+
+				for (var i = 0; i < 4; i++) {
+					var page = pages[i];
+					var newpage = plus.webview.create(page, page, style);
+
+					var cpage = plus.webview.currentWebview();
+					cpage.append(newpage);
+
+					if (i != 0) {
+						newpage.hide();
+					}
+				};
+
+				mui("nav").on('tap', 'a', function() {
+					var id = this.getAttribute("id");
+					
+					var page = pages[id];
+					
+					plus.webview.getWebviewById(page).show();
+				})
+
+			});
+			
+			function sendContent(msgParam) {
+				sendObj(msgParam)
+			}
+		</script>
+	</head>
+	<body>
+
+		<nav class="mui-bar mui-bar-tab">
+			<a class="mui-tab-item mui-active" id="0">
+				<span class="mui-icon mui-icon-chatbubble"></span>
+				<span class="mui-tab-label">消息</span>
+			</a>
+			<a class="mui-tab-item" id="1">
+				<span class="mui-icon mui-icon-personadd"></span>
+				<span class="mui-tab-label">通讯录</span>
+			</a>
+			<a class="mui-tab-item" id="2">
+				<span class="mui-icon mui-icon-pengyouquan"></span>
+				<span class="mui-tab-label">发现</span>
+			</a>
+			<a class="mui-tab-item" id="3">
+				<span class="mui-icon mui-icon-gear"></span>
+				<span class="mui-tab-label">我</span>
+			</a>
+		</nav>
+	</body>
+</html>

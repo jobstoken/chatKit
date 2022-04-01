@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<meta name="viewport"
+			content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<link href="css/mui.css" rel="stylesheet" />
+		<link href="./css/myimg.css" rel="stylesheet" />
+		<script src="js/ajax_utils.js"></script>
+		<script src="js/mui.js"></script>
+		<script type="text/javascript">
+			mui.init()
+			mui.plusReady(function() {
+				var user = util.getUser();
+				if (user.headerBig != null){
+					document.getElementById("showBig").src = user.headerBig
+				}
+				document.getElementById("upload_btn").addEventListener('tap', function() {
+
+					plus.gallery.pick(function(path) {
+						// 上传任务
+						var task = plus.uploader.createUpload(url.upload_url, {},
+							function(t, status) {
+								var resp = JSON.parse(t.responseText);
+								// console.info(JSON.stringify(resp))
+								// console.info(JSON.stringify(user))
+
+								// 上传完成
+								if (resp.code == "ok") {
+									var headerSmall = resp.data.headerSmall
+									var headerBig = resp.data.headerBig
+									document.getElementById("showBig").src = headerBig
+									user.headerBig = headerBig
+									user.headerSmall = headerSmall
+									util.setUser(user)
+									mui.back()
+									
+									plus.webview.getWebviewById("me.html").evalJS("updateHeader()");
+								} else {
+									plus.nativeUI.toast("上传失败");
+								}
+							}
+						);
+						// 添加上传文件
+						task.addFile(path, {
+							key: "file"
+						});
+						// 设置其他参数
+						task.addData("userId", user.id + "");
+						// 启动上传
+						task.start();
+
+					});
+				});
+			});
+		</script>
+	</head>
+
+	<body style="text-align: center;">
+		<header class="mui-bar mui-bar-nav">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">上传头像</h1>
+		</header>
+
+		<img src="img/defaultheader.png" id="showBig" style="margin-top: 50px;" class="bimg" />
+		<div id="sheet" class="mui-popover mui-popover-bottom mui-popover-action ">
+			<!-- 可选择菜单 -->
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell" id="upload_btn">
+					<a href="#">从相册选择</a>
+				</li>
+				<li class="mui-table-view-cell">
+					<a href="#">拍照</a>
+				</li>
+			</ul>
+			<!-- 取消菜单 -->
+			<ul class="mui-table-view">
+				<li class="mui-table-view-cell">
+					<a href="#sheet1"><b>取消</b></a>
+				</li>
+			</ul>
+		</div>
+		<a href="#sheet" id="openSheet" class="mui-btn mui-btn-primary mui-btn-block">上传头像</a>
+
+	</body>
+
+</html>
